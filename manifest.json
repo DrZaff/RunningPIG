@@ -9,9 +9,15 @@
   "description": "Log and track a 13-week zone-based half marathon plan. Offline-first PWA.",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect width='100%25' height='100%25' rx='36' fill='%23050810'/%3E%3Cpath d='M52 122c18 0 22-44 44-44s26 44 44 44' fill='none' stroke='%2316f29a' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='96' cy='62' r='16' fill='%237cffb2'/%3E%3C/svg%3E",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
