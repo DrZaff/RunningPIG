@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Half Marathon Plan Logger – ClinicalToolsDEV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#050810" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Basic fallback icon (inline SVG data URL) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect width='100%25' height='100%25' rx='36' fill='%23050810'/%3E%3Cpath d='M52 122c18 0 22-44 44-44s26 44 44 44' fill='none' stroke='%2316f29a' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='96' cy='62' r='16' fill='%237cffb2'/%3E%3C/svg%3E" />
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="app-header__inner">
+      <div>
+        <h1 class="app-title">Flying Pig Half Marathon</h1>
+        <p class="app-subtitle">13-week Zone-based plan • Log workouts • Offline-first</p>
+      </div>
+      <div class="header-pill">Zone 2 Focus</div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <!-- GLOBAL RULES -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Global Rules</h2>
+        <p class="card-subtitle">Quick reminders (always apply)</p>
+      </div>
+
+      <div class="card-body">
+        <ul class="rules">
+          <li><span class="dot"></span>Intensity control: use HR Zones for all sessions; most work is <b>Zone 2</b>.</li>
+          <li><span class="dot"></span><b>No back-to-back runs</b>. Use bike/endurance/recovery between run days.</li>
+          <li><span class="dot"></span>Keep impact gradual; finish sessions feeling better than you started.</li>
+          <li><span class="dot"></span>Flex days as needed; do not require fixed weekdays.</li>
+        </ul>
+
+        <div class="mini-actions">
+          <button class="btn btn--soft" id="btnRunnerInfo" type="button">Runner Info</button>
+          <button class="btn btn--soft" id="btnHRZones" type="button">HR Zones</button>
+          <button class="btn btn--soft" id="btnWeeklyStructure" type="button">Weekly Structure</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="dashboardCard">
+      <div class="card-header">
+        <h2 class="card-title">Training Dashboard</h2>
+        <p class="card-subtitle">Your progress so far</p>
+      </div>
+
+      <div class="card-body dashboard">
+        <div class="dash-item">
+          <span class="dash-label">Workouts</span>
+          <span class="dash-value" id="dashWorkouts">0</span>
+        </div>
+
+        <div class="dash-item">
+          <span class="dash-label">Total Miles</span>
+          <span class="dash-value" id="dashMiles">0.0</span>
+        </div>
+
+        <div class="dash-item">
+          <span class="dash-label">Avg HR</span>
+          <span class="dash-value" id="dashHR">—</span>
+        </div>
+
+        <div class="dash-item">
+          <span class="dash-label">Avg Quality</span>
+          <span class="dash-value" id="dashQuality">—</span>
+        </div>
+
+        <div class="dash-item">
+          <span class="dash-label">Longest Run</span>
+          <span class="dash-value" id="dashLongest">—</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- PLAN -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Training Plan</h2>
+        <p class="card-subtitle">Tap a week → check workouts → log details</p>
+      </div>
+
+      <div class="card-body" id="planRoot">
+        <!-- injected -->
+      </div>
+    </section>
+
+    <!-- RESET -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Data</h2>
+        <p class="card-subtitle">This only affects your device</p>
+      </div>
+      <div class="card-body">
+        <button class="btn btn--danger" id="btnReset" type="button">Reset Workout Plan</button>
+        <p class="muted small" style="margin-top: 0.75rem;">
+          Reset clears all logged workouts and completion status from this device.
+        </p>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <p>
+        <b>Disclaimer:</b> This tool is for educational and decision-support purposes only. It does not replace clinical judgment,
+        institutional guidelines, or specialist consultation.
+      </p>
+      <p class="muted small">Built with ClinicalToolsDEV template • Offline-capable PWA</p>
+    </footer>
+  </main>
+
+  <!-- INFO MODAL -->
+  <dialog class="modal" id="infoModal">
+    <div class="modal__card">
+      <div class="modal__header">
+        <h3 class="modal__title" id="infoModalTitle">Info</h3>
+        <button class="icon-btn" id="btnCloseInfo" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal__body" id="infoModalBody"></div>
+      <div class="modal__footer">
+        <button class="btn" id="btnInfoOk" type="button">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- LOG MODAL -->
+  <dialog class="modal" id="logModal">
+    <form class="modal__card" id="logForm" method="dialog">
+      <div class="modal__header">
+        <h3 class="modal__title" id="logTitle">Log Workout</h3>
+        <button class="icon-btn" id="btnCloseLog" type="button" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal__body">
+        <p class="muted small" id="logSubtitle"></p>
+
+        <div class="grid">
+          <label class="field">
+            <div class="field-label"><span>Workout Time</span></div>
+            <input class="field-input" id="logTime" type="text" placeholder="e.g., 42:15 or 45 min" inputmode="text" required />
+          </label>
+
+          <label class="field">
+            <div class="field-label"><span>Distance (miles)</span></div>
+            <input class="field-input" id="logMiles" type="number" min="0" step="0.01" placeholder="e.g., 4.25" inputmode="decimal" required />
+          </label>
+
+          <label class="field">
+            <div class="field-label"><span>Avg HR (bpm)</span></div>
+            <input class="field-input" id="logHR" type="number" min="40" max="250" step="1" placeholder="e.g., 132" inputmode="numeric" required />
+          </label>
+        </div>
+
+        <div class="field" style="margin-top: 0.75rem;">
+          <div class="field-label"><span>Workout Quality</span></div>
+          <div class="stars" id="stars" role="radiogroup" aria-label="Workout quality">
+            <!-- injected -->
+          </div>
+          <div class="muted small" id="starsHint">Tap a star (1–5)</div>
+        </div>
+
+        <label class="field" style="margin-top: 0.75rem;">
+          <div class="field-label"><span>Comments</span></div>
+          <textarea class="field-input" id="logComments" rows="3" placeholder="Any notes (optional)"></textarea>
+        </label>
+
+        <p class="muted small" style="margin-top: 0.75rem;">
+          Saved locally on this device.
+        </p>
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn btn--soft" id="btnCancelLog" type="button">Cancel</button>
+        <button class="btn" id="btnSaveLog" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- CONFIRM MODAL -->
+  <dialog class="modal" id="confirmModal">
+    <div class="modal__card">
+      <div class="modal__header">
+        <h3 class="modal__title">Confirm Reset</h3>
+        <button class="icon-btn" id="btnCloseConfirm" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal__body">
+        <p>Are you sure you want to reset the workout plan?</p>
+        <p class="muted small">This permanently clears all your logged data on this device.</p>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--soft" id="btnCancelReset" type="button">Cancel</button>
+        <button class="btn btn--danger" id="btnConfirmReset" type="button">Yes, Reset</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
