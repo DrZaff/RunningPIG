@@ -291,36 +291,57 @@ function getAllLogs() {
   return Object.values(appState.logs || {});
 }
 
+function getWorkoutTypeFromKey(workoutKey) {
+  const key = workoutKey.toLowerCase();
+
+  if (key.includes("run") || key.includes("race")) return "run";
+  if (key.includes("bike") || key.includes("peloton")) return "bike";
+
+  return "other";
+}
+
 function calcDashboardStats() {
   const logs = getAllLogs();
   if (logs.length === 0) {
     return {
       workouts: 0,
-      miles: 0,
+      milesRun: 0,
+      milesBike: 0,
       avgHR: null,
       avgQuality: null,
-      longest: null
+      longestRun: null
     };
   }
 
-  let totalMiles = 0;
   let totalHR = 0;
   let totalQuality = 0;
-  let longest = 0;
+  let milesRun = 0;
+  let milesBike = 0;
+  let longestRun = 0;
 
-  logs.forEach(l => {
-    totalMiles += l.miles;
-    totalHR += l.avgHR;
-    totalQuality += l.quality;
-    if (l.miles > longest) longest = l.miles;
+  entries.forEach(([key, log]) => {
+    totalHR += log.avgHR;
+    totalQuality += log.quality;
+
+    const type = getWorkoutTypeFromKey(key);
+
+    if (type === "run") {
+      milesRun += log.miles;
+      if (log.miles > longestRun) longestRun = log.miles;
+    }
+
+    if (type === "bike") {
+      milesBike += log.miles;
+    }
   });
 
   return {
-    workouts: logs.length,
-    miles: totalMiles,
-    avgHR: Math.round(totalHR / logs.length),
-    avgQuality: (totalQuality / logs.length).toFixed(1),
-    longest
+    workouts: entries.length,
+    milesRun,
+    milesBike,
+    avgHR: Math.round(totalHR / entries.length),
+    avgQuality: (totalQuality / entries.length).toFixed(1),
+    longestRun
   };
 }
 
@@ -328,7 +349,8 @@ function renderDashboard() {
   const stats = calcDashboardStats();
 
   document.getElementById("dashWorkouts").textContent = stats.workouts;
-  document.getElementById("dashMiles").textContent = stats.miles.toFixed(1);
+  document.getElementById("dashMiles").textContent = stats.milesRun.toFixed(1);
+  document.getElementById("dashMilesBike").textContent = stats.milesBike.toFixed(1);
   document.getElementById("dashHR").textContent = stats.avgHR ?? "—";
   document.getElementById("dashQuality").textContent =
     stats.avgQuality ? `★ ${stats.avgQuality}` : "—";
