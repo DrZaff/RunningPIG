@@ -301,15 +301,16 @@ function getWorkoutTypeFromKey(workoutKey) {
 }
 
 function calcDashboardStats() {
-  const logs = getAllLogs();
-  if (logs.length === 0) {
+  const entries = Object.entries(appState.logs || {});
+
+  if (entries.length === 0) {
     return {
       workouts: 0,
       milesRun: 0,
       milesBike: 0,
       avgHR: null,
       avgQuality: null,
-      longestRun: null
+      longestRun: null,
     };
   }
 
@@ -320,18 +321,16 @@ function calcDashboardStats() {
   let longestRun = 0;
 
   entries.forEach(([key, log]) => {
-    totalHR += log.avgHR;
-    totalQuality += log.quality;
+    totalHR += Number(log.avgHR) || 0;
+    totalQuality += Number(log.quality) || 0;
 
     const type = getWorkoutTypeFromKey(key);
 
     if (type === "run") {
-      milesRun += log.miles;
-      if (log.miles > longestRun) longestRun = log.miles;
-    }
-
-    if (type === "bike") {
-      milesBike += log.miles;
+      milesRun += Number(log.miles) || 0;
+      if ((Number(log.miles) || 0) > longestRun) longestRun = Number(log.miles) || 0;
+    } else if (type === "bike") {
+      milesBike += Number(log.miles) || 0;
     }
   });
 
@@ -341,21 +340,21 @@ function calcDashboardStats() {
     milesBike,
     avgHR: Math.round(totalHR / entries.length),
     avgQuality: (totalQuality / entries.length).toFixed(1),
-    longestRun
+    longestRun,
   };
 }
 
 function renderDashboard() {
   const stats = calcDashboardStats();
 
-  document.getElementById("dashWorkouts").textContent = stats.workouts;
-  document.getElementById("dashMiles").textContent = stats.milesRun.toFixed(1);
+  document.getElementById("dashWorkouts").textContent = String(stats.workouts);
+  document.getElementById("dashMilesRun").textContent = stats.milesRun.toFixed(1);
   document.getElementById("dashMilesBike").textContent = stats.milesBike.toFixed(1);
   document.getElementById("dashHR").textContent = stats.avgHR ?? "—";
   document.getElementById("dashQuality").textContent =
     stats.avgQuality ? `★ ${stats.avgQuality}` : "—";
   document.getElementById("dashLongest").textContent =
-    stats.longest ? `${stats.longest.toFixed(1)} mi` : "—";
+    stats.longestRun ? `${stats.longestRun.toFixed(1)} mi` : "—";
 }
 
 function calcWeekProgress(week) {
@@ -575,7 +574,10 @@ function saveWorkoutLog() {
   appState.logs[activeWorkoutKey] = log;
   saveState(appState);
   closeLogModal();
+
   renderPlan();
+  renderDashboard();   // ✅ add this
+
   toast("Saved ✅");
 }
 
@@ -680,7 +682,10 @@ function doReset() {
   clearState();
   appState = loadState();
   closeConfirmReset();
+
   renderPlan();
+  renderDashboard();   // ✅ add this
+
   toast("All data cleared.");
 }
 
